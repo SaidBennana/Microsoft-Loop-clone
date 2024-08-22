@@ -1,14 +1,38 @@
 "use client";
-import { OrganizationSwitcher, useAuth, UserButton } from "@clerk/nextjs";
-import React from "react";
+import Logo from "@/app/_components/Logo";
+import { db } from "@/config/firebaseConfiger";
+import {
+  OrganizationSwitcher,
+  useAuth,
+  UserButton,
+  useUser,
+} from "@clerk/nextjs";
+import { doc, setDoc } from "firebase/firestore";
+import React, { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function Header() {
-  const { orgId } = useAuth();
+  const { user } = useUser();
+
+  useEffect(() => {
+    saveUser();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+  const saveUser = async () => {
+    try {
+      const id = user?.primaryEmailAddress?.emailAddress;
+      await setDoc(doc(db, "users", id!), {
+        name: user?.fullName,
+        avater: user?.imageUrl,
+        email: user?.primaryEmailAddress?.emailAddress,
+      });
+    } catch (error: any) {
+      toast(error?.message);
+    }
+  };
   return (
     <div className="flex justify-between px-10 py-4 border-b">
-      <h1 className="font-extrabold text-xl">
-        <span className="text-primary">OPP</span> Loop
-      </h1>
+      <Logo />
       <OrganizationSwitcher
         afterCreateOrganizationUrl={"/dashboard"}
         afterLeaveOrganizationUrl={"/dashboard"}

@@ -1,14 +1,40 @@
 "use client";
 import { Button } from "@/components/ui/button";
-import { useUser } from "@clerk/nextjs";
+import { db } from "@/config/firebaseConfiger";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { collection, doc, getDocs, query, where } from "firebase/firestore";
 import { Grid2X2, TableOfContents } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import WorkspaceCard from "./WorkspaceCard";
 
 export default function WorkspaceList() {
   const { user } = useUser();
-  const [workspaceList, setWorkspaceList] = useState([]);
+  const [workspaceList, setWorkspaceList] = useState<any>([]);
+  const { orgId } = useAuth();
+
+  useEffect(() => {
+    Get_workspaceList();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [orgId,user]);
+
+  const Get_workspaceList = async () => {
+    const refDoc = query(
+      collection(db, "Workspace"),
+      where(
+        "orgId",
+        "==",
+        orgId ? orgId : user?.primaryEmailAddress?.emailAddress
+      )
+    );
+    const data = await getDocs(refDoc);
+    setWorkspaceList([]);
+    data.forEach((doc) => {
+      setWorkspaceList((old: any) => [...old, doc.data()]);
+    });
+    console.log(workspaceList);
+  };
   return (
     <div className="mt-20 px-40">
       <div className="flex justify-between">
@@ -44,7 +70,11 @@ export default function WorkspaceList() {
           </Link>
         </div>
       ) : (
-        <div></div>
+        <div className="grid grid-cols-4 gap-4 mt-6">
+          {workspaceList.map((item: any) => {
+            return <WorkspaceCard workspaceId={item.id} emoji={item?.emoji} name={item?.name} key={item?.name} image={item?.conveImage}/>;
+          })}
+        </div>
       )}
     </div>
   );
