@@ -1,8 +1,9 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import EditorJS from "@editorjs/editorjs";
 import Header from "@editorjs/header";
 import Delimiter from "@editorjs/delimiter";
+import List from '@editorjs/list';
 // @ts-ignoreimport List from "@editorjs/list";
 import Alert from "editorjs-alert";
 // @ts-ignoreimport List from "@editorjs/list";
@@ -18,6 +19,7 @@ import { useUser } from "@clerk/nextjs";
 import Paragraph from "@editorjs/paragraph";
 import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/config/firebaseConfiger";
+import GenerateAi from "./GenerateAi";
 
 function RichDocumentEditor({ params }: { params: any }) {
   const ref = useRef<EditorJS>();
@@ -30,24 +32,28 @@ function RichDocumentEditor({ params }: { params: any }) {
   }, []);
 
   const Get_Document = () => {
-    const unSubscribe = onSnapshot(
-      doc(db, "documentOutput", params?.documentId),
-      (doc) => {
-        if (doc.exists()) {
-          if (isFetched == false) {
-            doc.data()?.output && editor?.render(doc.data()?.output);
-          }
-          isFetched = true;
-        }
+    onSnapshot(doc(db, "documentOutput", params?.documentId), (doc) => {
+      if (
+        doc.data()?.editeBy != user?.primaryEmailAddress?.emailAddress ||
+        isFetched == false
+      ) {
+        console.log(
+          doc.data()?.editedBy,
+          " , ",
+          user?.primaryEmailAddress?.emailAddress
+        );
+        console.log("change");
+        doc.data()?.output && editor?.render(JSON.parse(doc.data()?.output));
       }
-    );
+      isFetched = true;
+    });
   };
 
   const save_document = () => {
     ref.current?.save().then(async (outputData: any) => {
       const refDoc = doc(db, "documentOutput", params?.documentId);
       await updateDoc(refDoc, {
-        output: outputData,
+        output: JSON.stringify(outputData),
         editeBy: user?.primaryEmailAddress?.emailAddress
           ? user?.primaryEmailAddress?.emailAddress
           : "",
@@ -64,6 +70,7 @@ function RichDocumentEditor({ params }: { params: any }) {
         onReady: () => {
           Get_Document();
         },
+
         /**
          * Id of Element that should contain Editor instance
          */
@@ -91,15 +98,15 @@ function RichDocumentEditor({ params }: { params: any }) {
               messagePlaceholder: "Enter something",
             },
           },
+          list: {
+            // @ts-ignoreimport List from "@editorjs/list";
+            class: List,
+            inlineToolbar: true,
+            config: {
+              defaultStyle: 'unordered'
+            }
+          },
           table: Table,
-          // list: {
-          //   class: List,
-          //   inlineToolbar: true,
-          //   shortcut: "CMD+SHIFT+L",
-          //   config: {
-          //     defaultStyle: "unordered",
-          //   },
-          // },
           checklist: {
             class: Checklist,
             shortcut: "CMD+SHIFT+C",
@@ -117,8 +124,11 @@ function RichDocumentEditor({ params }: { params: any }) {
     }
   };
   return (
-    <div className="mt-10 w-full">
-      <div className="w-full" id="editorjs"></div>
+    <div className="mt-10 ms-20 relative">
+      <div id="editorjs"></div>
+      <div className="fixed bottom-28 left-5">
+        <GenerateAi setGeneratedOutput={(output) => editor?.render(output)} />
+      </div>
     </div>
   );
 }

@@ -23,7 +23,7 @@ export default function Header() {
       const id = user?.primaryEmailAddress?.emailAddress;
       await setDoc(doc(db, "users", id!), {
         name: user?.fullName,
-        avater: user?.imageUrl,
+        avatar: user?.imageUrl,
         email: user?.primaryEmailAddress?.emailAddress,
       });
     } catch (error: any) {

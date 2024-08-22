@@ -22,7 +22,7 @@ export default function EmojiPicker_Component({
         >
           {children}
         </PopoverTrigger>
-        <PopoverContent className="w-64">
+        <PopoverContent className="w-64 z-10">
           <EmojiPicker
             onEmojiClick={(v) => {
               setEmoji(v);

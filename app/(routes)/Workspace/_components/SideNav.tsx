@@ -17,6 +17,7 @@ import { useUser } from "@clerk/nextjs";
 import uuid4 from "uuid4";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import Natifiation from "./Natifiation";
 
 export default function SideNav({ params }: { params: any }) {
   const [documents, setDocuments] = useState<any>([]);
@@ -71,7 +72,7 @@ export default function SideNav({ params }: { params: any }) {
       output: {
         time: 1724328514628,
         version: "2.30.5",
-        blocks: [
+        blocks: `[
           {
             type: "header",
             id: "NqrquiNy2y",
@@ -80,7 +81,7 @@ export default function SideNav({ params }: { params: any }) {
               text: "Get started",
             },
           },
-        ],
+        ]`,
       },
     });
   };
@@ -89,7 +90,11 @@ export default function SideNav({ params }: { params: any }) {
     <div className="w-72 fixed h-screen bg-blue-50 px-5">
       <div className="flex justify-between  py-6 items-center">
         <Logo />
-        <Bell className="w-5 h-5 text-gray-500" />
+        {params?.documentId && (
+          <Natifiation>
+            <Bell className="w-5 h-5 text-gray-500" />
+          </Natifiation>
+        )}
       </div>
       <hr className="my-3" />
       <div className="flex items-center justify-between mt-5">

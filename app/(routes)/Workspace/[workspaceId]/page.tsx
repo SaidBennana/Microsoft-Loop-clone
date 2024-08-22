@@ -3,9 +3,9 @@ import SideNav from "../_components/SideNav";
 
 function page({ params }: any) {
   return (
-    <div>
-      <SideNav params={params} />
-    </div>
+      <div>
+        <SideNav params={params} />
+      </div>
   );
 }
 

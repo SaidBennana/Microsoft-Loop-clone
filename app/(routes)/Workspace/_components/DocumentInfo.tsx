@@ -2,7 +2,7 @@
 import CoverPicker from "@/app/_components/CoverPicker";
 import EmojiPicker_Component from "@/app/_components/EmojiPickerComponent";
 import { db } from "@/config/firebaseConfiger";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -21,13 +21,12 @@ export default function DocumentInfo({ params }: { params: any }) {
    */
   const GetDocumentInfo = async () => {
     const docRef = doc(db, "WorkspaceDocument", params?.documentId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      console.log(docSnap.data());
+    onSnapshot(docRef, (docSnap) => {
       setDocumentName(docSnap.data());
-      docSnap.data().emoji && setEmoji(docSnap.data().emoji);
-      docSnap.data().conveImage && setWorkspaceCover(docSnap.data().conveImage);
-    }
+      docSnap.data()?.emoji && setEmoji(docSnap?.data()?.emoji);
+      docSnap.data()?.conveImage &&
+        setWorkspaceCover(docSnap?.data()?.conveImage);
+    });
   };
 
   const UpdateDocument = async (body: any) => {
@@ -62,8 +61,8 @@ export default function DocumentInfo({ params }: { params: any }) {
           setEmoji={(v) => {
             setEmoji(v.emoji);
             UpdateDocument({
-                emoji: v.emoji,
-            })
+              emoji: v.emoji,
+            });
           }}
         >
           <div className="p-1 bg-white/50 rounded-lg text-3xl">{Emoji}</div>
@@ -74,12 +73,16 @@ export default function DocumentInfo({ params }: { params: any }) {
           onBlur={(e) => {
             UpdateDocument({
               name: e.target?.value,
+              
             });
+          }}
+          onChange={(e)=>{
+            setDocumentName(e.target?.value);
           }}
           className="font-bold text-3xl outline-none w-full"
           type="text"
+          value={DocumentName?.name}
           placeholder="Utitled Document"
-          defaultValue={DocumentName?.name}
         />
       </div>
     </div>

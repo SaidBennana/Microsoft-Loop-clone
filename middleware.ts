@@ -5,12 +5,11 @@ const isPublicRoute = createRouteMatcher(["/dashboard(.*)"]);
 
 export default clerkMiddleware((auth, request) => {
   const url = request.nextUrl;
-  console.log(url.pathname);
   if (isPublicRoute(request)) {
     auth().protect();
   }
   if (url.pathname == "/") {
-    return NextResponse.rewrite(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 });
 
